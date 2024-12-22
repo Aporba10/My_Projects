@@ -492,7 +492,10 @@ def log_in(users):
         print("\n--- Log In / Sign Up ---")
         username = input("Enter your username: ")
         
-        if username in UserManager._UserManager__users:
+        # Load users from UserManager
+        all_users = UserManager.load_users()
+
+        if username in all_users:  # Correctly accessing the loaded users
             print("Welcome back, returning user!")
             password = input("Enter your password or type 'reset' to reset it: ")
             
@@ -501,8 +504,8 @@ def log_in(users):
                 new_password = input("Enter your new password: ")
                 confirm_password = input("Confirm your new password: ")
                 if new_password == confirm_password:
-                    UserManager.__users[username]["password"] = new_password
-                    UserManager.save_users()  # Corrected reference
+                    all_users[username]["password"] = new_password  # Update password
+                    UserManager.save_users()  # Save updated users
                     print("Password reset successfully!")
                     return username
                 else:
@@ -521,12 +524,6 @@ def log_in(users):
             confirm_password = input("Confirm your password: ")
             if new_password == confirm_password:
                 UserManager.add_user(username, new_password)
-                users[username] = {
-                    "password": new_password,
-                    "progress": {},
-                    "statistics": {"completed_lessons": 0, "quiz_accuracy": 0}
-                }
-                # UserManager.save_users(users)  # Corrected reference
                 print("Account created successfully!")
                 return username
             else:
@@ -535,6 +532,7 @@ def log_in(users):
     except Exception as e:
         print(f"An error occurred during login/signup: {e}")
         return None
+
 
 class LessonHandler:
     """Class to manage lessons and quizzes."""
@@ -598,7 +596,7 @@ class LessonHandler:
                 user_answer = input(f"{question} ").strip().lower()  # Convert user input to lowercase
                 if isinstance(answers, list):
                     # Convert all possible correct answers to lowercase for case-insensitive comparison
-                    if user_answer in [ans.lower() for ans in answers]:
+                    if user_answer.lower() in [ans.lower() for ans in answers]:
                         correct += 1
                         print("Correct!")
                     else:
